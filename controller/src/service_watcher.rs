@@ -44,9 +44,12 @@ pub async fn watch_service() -> Result<(), Error> {
 async fn update_serviceinfo(svc: Service) -> Result<(), Error> {
     let svc_name = svc.name_any();
     let svc_namespace = svc.metadata.namespace.to_owned();
-    let svc_spec = &svc.spec;
-    let svc_ip = svc_spec.as_ref().unwrap().cluster_ip.as_ref().unwrap();
 
+    let Some(svc_ip) = (&svc.spec).as_ref().unwrap().cluster_ip.as_ref() else {
+        warn!("Service {} has no cluster IP", svc_name);
+        return Ok(());
+    };
+    
     let z = SvcDetail {
         svc_ip: svc_ip.to_owned(),
         svc_name: svc_name.to_owned(),
